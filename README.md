@@ -1,16 +1,48 @@
-# React + Vite
+# 🧬 Mapa Conceptual de Biología Molecular
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Una aplicación interactiva en React para visualizar y explorar 69 conceptos fundamentales de biología molecular y sus interrelaciones.
 
-Currently, two official plugins are available:
+## ✨ Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🎨 **Visualización interactiva** con React Flow
+- 🔍 **Búsqueda en tiempo real** de conceptos
+- 📊 **69 nodos organizados** en 6 categorías temáticas
+- 🔗 **106 conexiones** entre conceptos
+- 🎯 **Mini-mapa** para navegación rápida
+- 💡 **Información detallada** al hacer clic en cada concepto
+- 🎨 **Codificación por colores** para cada categoría
 
-## React Compiler
+## 🚀 Instalación y Uso
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# Instalar dependencias
+npm install
 
-## Expanding the ESLint configuration
+# Iniciar servidor de desarrollo
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Abre http://localhost:5173 en tu navegador.
+
+## 🎮 Cómo Usar
+
+- **Arrastra** el canvas para moverte
+- **Rueda del mouse** para zoom
+- **Click en nodos** para ver detalles
+- **Busca** conceptos en la barra superior
+
+## 📚 Categorías
+
+1. Fundamentos Celulares (6)
+2. Estructura y Genética (17)
+3. Dogma Central (6)
+4. Traducción y Proteínas (11)
+5. Técnicas Moleculares (17)
+6. Genómica y Evolución (11)
+
+## 🛠️ Tecnologías
+
+- React 18
+- Vite
+- React Flow
+- Lucide React
