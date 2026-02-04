@@ -9,20 +9,19 @@ import {
   Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Search, Info, BookOpen } from 'lucide-react';
+import { Search, BookOpen } from 'lucide-react';
 import { initialNodes, initialEdges } from './data/mapData';
 import { conceptosInfo } from './data/conceptsData';
 import './App.css';
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNode, setSelectedNode] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [showTooltip, setShowTooltip] = useState(null);
 
   // Cargar posiciones guardadas
   useEffect(() => {
@@ -56,7 +55,7 @@ function App() {
     }
   }, []);
 
-  const filteredConceptos = Object.entries(conceptosInfo).filter(([key, value]) =>
+  const filteredConceptos = Object.entries(conceptosInfo).filter(([_key, value]) =>
     value.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     value.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
   );

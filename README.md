@@ -20,6 +20,15 @@ npm install
 
 # Iniciar servidor de desarrollo
 npm run dev
+
+# Ejecutar linter
+npm run lint
+
+# Corregir errores automáticamente
+npm run lint:fix
+
+# Construir para producción
+npm run build
 ```
 
 Abre http://localhost:5173 en tu navegador.
