@@ -20,6 +20,34 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNode, setSelectedNode] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showTooltip, setShowTooltip] = useState(null);
+
+  // Cargar posiciones guardadas
+  useEffect(() => {
+    const savedPositions = localStorage.getItem('nodePositions');
+    if (savedPositions) {
+      const positions = JSON.parse(savedPositions);
+      setNodes((nds) =>
+        nds.map((node) => {
+          const savedPos = positions[node.id];
+          return savedPos ? { ...node, position: savedPos } : node;
+        })
+      );
+    }
+  }, [setNodes]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const onNodeClick = useCallback((event, node) => {
     const conceptInfo = conceptosInfo[node.id];
@@ -61,8 +89,46 @@ function App() {
     );
   };
 
+  const handleExport = () => {
+    const dataStr = JSON.stringify({ nodes, edges }, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'mapa-biologia.json';
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // Guardar posiciones cuando se mueven nodos
+  const handleNodesChange = useCallback((changes) => {
+    onNodesChange(changes);
+    
+    // Si es un cambio de posición, guardar
+    const positionChange = changes.find(c => c.type === 'position' && c.dragging === false);
+    if (positionChange && editMode) {
+      setNodes((nds) => {
+        const positions = {};
+        nds.forEach(node => {
+          positions[node.id] = node.position;
+        });
+        localStorage.setItem('nodePositions', JSON.stringify(positions));
+        return nds;
+      });
+    }
+  }, [onNodesChange, editMode, setNodes]);
+
+  // Resetear posiciones
+  const handleResetPositions = () => {
+    localStorage.removeItem('nodePositions');
+    setNodes(initialNodes);
+  };
+
   return (
-    <div className="app">
+    <div className={`app ${editMode ? 'edit-mode' : ''}`}>
       <header className="header">
         <div className="header-left">
           <div className="logo">
@@ -94,6 +160,33 @@ function App() {
           </div>
         </div>
         <div className="header-right">
+          {!isMobile && (
+            <>
+              <button 
+                className={`mode-btn ${editMode ? 'active' : ''}`}
+                onClick={() => setEditMode(!editMode)}
+                title={editMode ? 'Desactivar modo edición' : 'Activar modo edición para mover nodos'}
+              >
+                {editMode ? '🔒 Ver' : '✏️ Editar'}
+              </button>
+              <button className="export-btn" onClick={handleExport} title="Exportar mapa como JSON">
+                💾 Exportar
+              </button>
+              <button className="print-btn" onClick={handlePrint} title="Imprimir mapa">
+                🖨️ Imprimir
+              </button>
+              {editMode && (
+                <button 
+                  className="export-btn" 
+                  onClick={handleResetPositions}
+                  title="Restaurar posiciones originales"
+                  style={{ background: 'rgba(255,100,100,0.3)' }}
+                >
+                  ↺ Resetear
+                </button>
+              )}
+            </>
+          )}
           <span className="concept-count">69 conceptos</span>
         </div>
       </header>
@@ -181,19 +274,22 @@ function App() {
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            onNodesChange={onNodesChange}
+            onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
             fitView
             minZoom={0.2}
             maxZoom={1.5}
-            defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
+            defaultViewport={{ x: 0, y: 0, zoom: isMobile ? 0.3 : 0.5 }}
             attributionPosition="bottom-left"
             panOnScroll={true}
-            panOnDrag={true}
+            panOnDrag={!editMode}
             zoomOnScroll={true}
             zoomOnPinch={true}
             zoomOnDoubleClick={false}
+            nodesDraggable={editMode}
+            nodesConnectable={false}
+            elementsSelectable={true}
           >
             <Background 
               color="#aaa"
@@ -217,6 +313,19 @@ function App() {
               maskColor="rgba(0, 0, 0, 0.1)"
               position="bottom-left"
             />
+            {editMode && (
+              <Panel position="top-center" style={{
+                background: 'rgba(255, 215, 0, 0.9)',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '8px',
+                fontWeight: '600',
+                color: '#000',
+                border: '2px solid #ffa500',
+                boxShadow: '0 4px 12px rgba(255, 165, 0, 0.3)'
+              }}>
+                ✏️ Modo Edición Activado - Arrastra los nodos para reorganizar
+              </Panel>
+            )}
             <Panel position="top-right" className="legend-panel">
               <div className="legend">
                 <h4>📚 Leyenda de Categorías</h4>

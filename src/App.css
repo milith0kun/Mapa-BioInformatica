@@ -129,6 +129,50 @@ body {
   flex: 1;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mode-btn,
+.export-btn,
+.print-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.mode-btn:hover,
+.export-btn:hover,
+.print-btn:hover {
+  background: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.5);
+  transform: translateY(-1px);
+}
+
+.mode-btn.active {
+  background: rgba(255,255,255,0.9);
+  color: #667eea;
+  border-color: white;
+  font-weight: 600;
+}
+
+.app.edit-mode {
+  cursor: move;
+}
+
+.app.edit-mode .react-flow__node {
+  cursor: grab;
+}
+
+.app.edit-mode .react-flow__node:active {
+  cursor: grabbing;
 }
 
 .concept-count {
@@ -137,6 +181,7 @@ body {
   border-radius: 20px;
   font-weight: 500;
   backdrop-filter: blur(10px);
+  white-space: nowrap;
 }
 
 /* Main Layout */
@@ -626,4 +671,164 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a0aec0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;
+    padding: 0.75rem;
+  }
+
+  .header h1 {
+    font-size: 1.2rem;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .concept-count {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .mode-btn,
+  .export-btn,
+  .print-btn {
+    display: none;
+  }
+
+  .search-bar {
+    padding: 0.6rem;
+  }
+
+  .toggle-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .sidebar.open {
+    width: 100%;
+  }
+
+  .search-input {
+    font-size: 14px;
+  }
+
+  .concept-item {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 95%;
+    margin: 1rem auto;
+    padding: 1.5rem;
+    max-height: 90vh;
+  }
+
+  .modal h2 {
+    font-size: 1.3rem;
+  }
+
+  .modal p {
+    font-size: 0.95rem;
+  }
+
+  .legend-panel {
+    bottom: 20px;
+    right: 10px;
+    max-width: 150px;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .legend-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .legend-item {
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .help-panel {
+    padding: 0.75rem;
+    max-width: 180px;
+    bottom: 20px;
+    left: 10px;
+  }
+
+  .help-title {
+    font-size: 0.9rem;
+  }
+
+  .help-content {
+    font-size: 0.75rem;
+  }
+
+  .help-content li {
+    margin-bottom: 0.3rem;
+  }
+
+  .react-flow__minimap {
+    width: 100px !important;
+    height: 75px !important;
+  }
+
+  .react-flow__controls {
+    bottom: 20px;
+  }
+
+  .react-flow__controls button {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1rem;
+  }
+
+  .concept-count {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal-category {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .legend-panel,
+  .help-panel {
+    display: none;
+  }
+
+  .react-flow__minimap {
+    display: none !important;
+  }
 }
