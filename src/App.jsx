@@ -276,18 +276,25 @@ function App() {
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
             fitView
-            minZoom={0.2}
-            maxZoom={1.5}
+            fitViewOptions={{
+              padding: 0.2,
+              includeHiddenNodes: false,
+              minZoom: 0.1,
+              maxZoom: 1.5
+            }}
+            minZoom={0.1}
+            maxZoom={2}
             defaultViewport={{ x: 0, y: 0, zoom: isMobile ? 0.3 : 0.5 }}
             attributionPosition="bottom-left"
             panOnScroll={true}
-            panOnDrag={!editMode}
+            panOnDrag={true}
             zoomOnScroll={true}
             zoomOnPinch={true}
             zoomOnDoubleClick={false}
             nodesDraggable={editMode}
             nodesConnectable={false}
             elementsSelectable={true}
+            selectNodesOnDrag={editMode}
           >
             <Background 
               color="#aaa"
