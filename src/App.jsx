@@ -132,7 +132,6 @@ function App() {
       <header className="header">
         <div className="header-left">
           <div className="logo">
-            <span className="logo-icon">🧬</span>
             <div className="logo-text">
               <h1>Mapa Conceptual</h1>
               <p>Biología Molecular</p>
@@ -167,13 +166,13 @@ function App() {
                 onClick={() => setEditMode(!editMode)}
                 title={editMode ? 'Desactivar modo edición' : 'Activar modo edición para mover nodos'}
               >
-                {editMode ? '🔒 Ver' : '✏️ Editar'}
+                {editMode ? 'Ver' : 'Editar'}
               </button>
               <button className="export-btn" onClick={handleExport} title="Exportar mapa como JSON">
-                💾 Exportar
+                Exportar
               </button>
               <button className="print-btn" onClick={handlePrint} title="Imprimir mapa">
-                🖨️ Imprimir
+                Imprimir
               </button>
               {editMode && (
                 <button 
@@ -182,7 +181,7 @@ function App() {
                   title="Restaurar posiciones originales"
                   style={{ background: 'rgba(255,100,100,0.3)' }}
                 >
-                  ↺ Resetear
+                  Resetear
                 </button>
               )}
             </>
@@ -323,12 +322,12 @@ function App() {
                 border: '2px solid #ffa500',
                 boxShadow: '0 4px 12px rgba(255, 165, 0, 0.3)'
               }}>
-                ✏️ Modo Edición Activado - Arrastra los nodos para reorganizar
+                MODO EDICIÓN - Arrastra los nodos para reorganizar
               </Panel>
             )}
             <Panel position="top-right" className="legend-panel">
               <div className="legend">
-                <h4>📚 Leyenda de Categorías</h4>
+                <h4>Leyenda de Categorías</h4>
                 <div className="legend-item">
                   <span className="legend-color fundamentales"></span>
                   Fundamentos
@@ -357,7 +356,7 @@ function App() {
             </Panel>
             <Panel position="top-left" className="help-panel">
               <div className="help-content">
-                <h4>💡 Cómo usar</h4>
+                <h4>Cómo usar</h4>
                 <ul>
                   <li><strong>Arrastra</strong> para navegar</li>
                   <li><strong>Rueda del mouse</strong> para zoom</li>
