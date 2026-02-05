@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -9,7 +9,7 @@ import {
   Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Search, BookOpen } from 'lucide-react';
+import { Search, BookOpen, Download, X, ChevronRight, FileImage, FileType, Dna } from 'lucide-react';
 import { initialNodes, initialEdges } from './data/mapData';
 import { conceptosInfo } from './data/conceptsData';
 import './App.css';
@@ -22,6 +22,9 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const reactFlowRef = useRef(null);
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   // Cargar posiciones guardadas
   useEffect(() => {
@@ -47,6 +50,17 @@ function App() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Cerrar menú de exportación al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (exportMenuOpen && !e.target.closest('.export-dropdown')) {
+        setExportMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [exportMenuOpen]);
 
   const onNodeClick = useCallback((event, node) => {
     const conceptInfo = conceptosInfo[node.id];
@@ -88,18 +102,84 @@ function App() {
     );
   };
 
-  const handleExport = () => {
-    const dataStr = JSON.stringify({ nodes, edges }, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = 'mapa-biologia.json';
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+  // Exportar como imagen de alta resolución
+  const exportAsImage = async (format = 'png', scale = 4) => {
+    const flowElement = document.querySelector('.react-flow');
+    if (!flowElement) return;
+
+    try {
+      // Importar html2canvas dinámicamente
+      const html2canvas = (await import('html2canvas')).default;
+      
+      // Ocultar controles temporalmente
+      const controls = flowElement.querySelector('.react-flow__controls');
+      const minimap = flowElement.querySelector('.react-flow__minimap');
+      const panels = flowElement.querySelectorAll('.react-flow__panel');
+      
+      if (controls) controls.style.display = 'none';
+      if (minimap) minimap.style.display = 'none';
+      panels.forEach(p => p.style.display = 'none');
+
+      const canvas = await html2canvas(flowElement, {
+        scale: scale, // Alta resolución para ploteo
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#0a0f1a',
+        width: flowElement.scrollWidth,
+        height: flowElement.scrollHeight,
+      });
+
+      // Restaurar controles
+      if (controls) controls.style.display = '';
+      if (minimap) minimap.style.display = '';
+      panels.forEach(p => p.style.display = '');
+
+      // Descargar
+      const link = document.createElement('a');
+      link.download = `mapa-biologia-molecular-${Date.now()}.${format}`;
+      link.href = canvas.toDataURL(`image/${format}`, 1.0);
+      link.click();
+
+      setExportMenuOpen(false);
+    } catch (error) {
+      console.error('Error al exportar:', error);
+      alert('Error al exportar. Asegúrate de que html2canvas esté instalado.');
+    }
   };
 
-  const handlePrint = () => {
-    window.print();
+  // Exportar como SVG (vectorial para máxima calidad)
+  const exportAsSVG = () => {
+    const svg = document.querySelector('.react-flow svg');
+    if (!svg) {
+      alert('No se encontró el SVG del mapa');
+      return;
+    }
+
+    const clonedSvg = svg.cloneNode(true);
+    clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    
+    const svgData = new XMLSerializer().serializeToString(clonedSvg);
+    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.download = `mapa-biologia-molecular-${Date.now()}.svg`;
+    link.href = url;
+    link.click();
+    
+    URL.revokeObjectURL(url);
+    setExportMenuOpen(false);
+  };
+
+  // Exportar como JSON
+  const handleExportJSON = () => {
+    const dataStr = JSON.stringify({ nodes, edges }, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', `mapa-biologia-molecular-${Date.now()}.json`);
+    linkElement.click();
+    setExportMenuOpen(false);
   };
 
   // Guardar posiciones cuando se mueven nodos
@@ -131,6 +211,7 @@ function App() {
       <header className="header">
         <div className="header-left">
           <div className="logo">
+            <Dna className="logo-icon" size={32} />
             <div className="logo-text">
               <h1>Mapa Conceptual</h1>
               <p>Biología Molecular</p>
@@ -165,27 +246,74 @@ function App() {
                 onClick={() => setEditMode(!editMode)}
                 title={editMode ? 'Desactivar modo edición' : 'Activar modo edición para mover nodos'}
               >
-                {editMode ? 'Ver' : 'Editar'}
+                {editMode ? '👁 Ver' : '✏️ Editar'}
               </button>
-              <button className="export-btn" onClick={handleExport} title="Exportar mapa como JSON">
-                Exportar
-              </button>
-              <button className="print-btn" onClick={handlePrint} title="Imprimir mapa">
-                Imprimir
-              </button>
+              
+              <div className="export-dropdown">
+                <button 
+                  className="export-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExportMenuOpen(!exportMenuOpen);
+                  }}
+                  title="Exportar mapa en alta resolución"
+                >
+                  <Download size={16} />
+                  Exportar
+                </button>
+                {exportMenuOpen && (
+                  <div className="export-menu">
+                    <div className="export-menu-header">
+                      <span>Exportar para ploteo</span>
+                    </div>
+                    <button onClick={() => exportAsImage('png', 4)}>
+                      <FileImage size={18} />
+                      <div>
+                        <span className="export-option-title">PNG Alta Resolución</span>
+                        <span className="export-option-desc">4x escala, ideal para impresión A1/A0</span>
+                      </div>
+                    </button>
+                    <button onClick={() => exportAsImage('png', 6)}>
+                      <FileImage size={18} />
+                      <div>
+                        <span className="export-option-title">PNG Ultra HD</span>
+                        <span className="export-option-desc">6x escala, máxima calidad</span>
+                      </div>
+                    </button>
+                    <button onClick={exportAsSVG}>
+                      <FileType size={18} />
+                      <div>
+                        <span className="export-option-title">SVG Vectorial</span>
+                        <span className="export-option-desc">Escalable, perfecto para cualquier tamaño</span>
+                      </div>
+                    </button>
+                    <div className="export-menu-divider"></div>
+                    <button onClick={handleExportJSON}>
+                      <FileType size={18} />
+                      <div>
+                        <span className="export-option-title">JSON Datos</span>
+                        <span className="export-option-desc">Estructura del mapa</span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {editMode && (
                 <button 
-                  className="export-btn" 
+                  className="reset-btn" 
                   onClick={handleResetPositions}
                   title="Restaurar posiciones originales"
-                  style={{ background: 'rgba(255,100,100,0.3)' }}
                 >
-                  Resetear
+                  ↺ Resetear
                 </button>
               )}
             </>
           )}
-          <span className="concept-count">69 conceptos</span>
+          <span className="concept-count">
+            <Dna size={14} />
+            69 conceptos
+          </span>
         </div>
       </header>
 
@@ -268,13 +396,14 @@ function App() {
           )}
         </aside>
 
-        <div className="canvas-container">
+        <div className="canvas-container" ref={reactFlowRef}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
             onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
+            onInit={setReactFlowInstance}
             fitView
             fitViewOptions={{
               padding: 0.2,
@@ -297,7 +426,7 @@ function App() {
             selectNodesOnDrag={editMode}
           >
             <Background 
-              color="#aaa"
+              color="#1e3a5f"
               gap={20}
               size={1}
             />
@@ -312,22 +441,14 @@ function App() {
                 return node.style?.background || '#e2e8f0';
               }}
               style={{
-                background: '#ffffff',
-                border: '2px solid #e2e8f0',
+                background: '#0d1520',
+                border: '2px solid #1e3a5f',
               }}
-              maskColor="rgba(0, 0, 0, 0.1)"
+              maskColor="rgba(0, 0, 0, 0.3)"
               position="bottom-left"
             />
             {editMode && (
-              <Panel position="top-center" style={{
-                background: 'rgba(255, 215, 0, 0.9)',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                fontWeight: '600',
-                color: '#000',
-                border: '2px solid #ffa500',
-                boxShadow: '0 4px 12px rgba(255, 165, 0, 0.3)'
-              }}>
+              <Panel position="top-center" className="edit-mode-banner">
                 MODO EDICIÓN - Arrastra los nodos para reorganizar
               </Panel>
             )}
@@ -360,39 +481,64 @@ function App() {
                 </div>
               </div>
             </Panel>
-            <Panel position="top-left" className="help-panel">
-              <div className="help-content">
-                <h4>Cómo usar</h4>
-                <ul>
-                  <li><strong>Arrastra</strong> para navegar</li>
-                  <li><strong>Rueda del mouse</strong> para zoom</li>
-                  <li><strong>Click en nodos</strong> para detalles</li>
-                  <li><strong>Busca</strong> conceptos arriba</li>
-                </ul>
-              </div>
-            </Panel>
+            {!isMobile && (
+              <Panel position="top-left" className="help-panel">
+                <div className="help-content">
+                  <h4>Cómo usar</h4>
+                  <ul>
+                    <li><strong>Arrastra</strong> para navegar</li>
+                    <li><strong>Rueda del mouse</strong> para zoom</li>
+                    <li><strong>Click en nodos</strong> para detalles</li>
+                    <li><strong>Busca</strong> conceptos arriba</li>
+                  </ul>
+                </div>
+              </Panel>
+            )}
           </ReactFlow>
         </div>
-      </div>
 
-      {selectedNode && (
-        <div className="modal-overlay" onClick={() => setSelectedNode(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal" onClick={() => setSelectedNode(null)}>
-              ×
-            </button>
-            <div className="modal-header">
-              <span className="modal-number">{selectedNode.numero}</span>
-              <h2>{selectedNode.nombre}</h2>
-            </div>
-            <div className="modal-body">
-              <p className="modal-description">{selectedNode.descripcion}</p>
-              <div className="modal-meta">
-                <div className="modal-category">
-                  <strong>Categoría:</strong> {selectedNode.categoria}
+        {/* Panel lateral derecho para detalles del concepto */}
+        <aside className={`detail-panel ${selectedNode ? 'open' : ''}`}>
+          {selectedNode && (
+            <>
+              <button className="close-panel" onClick={() => setSelectedNode(null)}>
+                <X size={20} />
+              </button>
+              <div className="detail-header">
+                <span className="detail-number">{selectedNode.numero}</span>
+                <h2>{selectedNode.nombre}</h2>
+              </div>
+              <div className="detail-body">
+                <p className="detail-description">{selectedNode.descripcion}</p>
+                <div className="detail-meta">
+                  <div className="detail-category">
+                    <strong>Categoría:</strong>
+                    <span>{selectedNode.categoria}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+              <div className="detail-footer">
+                <ChevronRight size={16} />
+                <span>Click en otro nodo para ver sus detalles</span>
+              </div>
+            </>
+          )}
+        </aside>
+      </div>
+
+      {/* Mobile bottom sheet for node details */}
+      {isMobile && selectedNode && (
+        <div className="mobile-detail-sheet">
+          <div className="mobile-sheet-header">
+            <button className="close-sheet" onClick={() => setSelectedNode(null)}>
+              <X size={20} />
+            </button>
+            <span className="mobile-number">{selectedNode.numero}</span>
+            <h3>{selectedNode.nombre}</h3>
+          </div>
+          <div className="mobile-sheet-body">
+            <p>{selectedNode.descripcion}</p>
+            <span className="mobile-category">{selectedNode.categoria}</span>
           </div>
         </div>
       )}
