@@ -7,8 +7,6 @@ import {
   useNodesState,
   useEdgesState,
   Panel,
-  getRectOfNodes,
-  getTransformForBounds,
 } from '@xyflow/react';
 import { toPng, toSvg } from 'html-to-image';
 import '@xyflow/react/dist/style.css';
@@ -121,23 +119,67 @@ function App() {
     link.click();
   };
 
+  // Helpers para exportación (implementación manual para evitar errores de import)
+  const getNodesBounds = (nodes) => {
+    if (nodes.length === 0) return { x: 0, y: 0, width: 0, height: 0 };
+
+    // Encontrar límites extremos
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    nodes.forEach((node) => {
+      const x = node.position.x;
+      const y = node.position.y;
+      // Usar medidas reales si existen, o un fallback estimado
+      const w = node.measured?.width ?? node.width ?? 180;
+      const h = node.measured?.height ?? node.height ?? 50;
+
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x + w > maxX) maxX = x + w;
+      if (y + h > maxY) maxY = y + h;
+    });
+
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  };
+
+  const getViewportForBounds = (bounds, width, height, minZoom, maxZoom, padding) => {
+    const xZoom = width / (bounds.width * (1 + padding));
+    const yZoom = height / (bounds.height * (1 + padding));
+    const zoom = Math.min(xZoom, yZoom);
+    const clampedZoom = Math.max(minZoom, Math.min(zoom, maxZoom));
+
+    // Centrar
+    const x = width / 2 - (bounds.x + bounds.width / 2) * clampedZoom;
+    const y = height / 2 - (bounds.y + bounds.height / 2) * clampedZoom;
+
+    return [x, y, clampedZoom];
+  };
+
   const exportMap = async (format = 'png', scale = 2) => {
-    // Calcular el rectángulo que abarca todos los nodos
-    const nodesBounds = getRectOfNodes(nodes);
+    // 1. Obtener bounds de todos los nodos
+    const nodesBounds = getNodesBounds(nodes);
 
-    // Configurar dimensiones de exportación con un margen
-    const padding = 50;
-    const width = nodesBounds.width + padding * 2;
-    const height = nodesBounds.height + padding * 2;
+    // 2. Definir tamaño de la imagen de salida (+ padding)
+    const padding = 0.1; // 10% de padding
+    const width = nodesBounds.width * (1 + padding * 2);
+    const height = nodesBounds.height * (1 + padding * 2);
 
-    // Obtener la configuración de transformación para que encaje
-    const transform = getTransformForBounds(
+    // 3. Calcular transformación para que encaje perfecto
+    const transform = getViewportForBounds(
       nodesBounds,
       width,
       height,
-      0.5, // minZoom (no limita exportación)
+      0.1, // minZoom (permitir alejarse mucho si es necesario)
       2,   // maxZoom
-      padding // padding
+      padding
     );
 
     const flowElement = document.querySelector('.react-flow__viewport');
@@ -154,7 +196,7 @@ function App() {
           height: height,
           transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
         },
-        pixelRatio: scale, // Calidad de exportación
+        pixelRatio: scale,
       };
 
       let dataUrl;
