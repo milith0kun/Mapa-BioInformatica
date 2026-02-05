@@ -177,8 +177,8 @@ function App() {
       nodesBounds,
       width,
       height,
-      0.1, // minZoom (permitir alejarse mucho si es necesario)
-      2,   // maxZoom
+      0.1, // minZoom
+      5,   // maxZoom aumentado para permitir más detalle
       padding
     );
 
@@ -192,11 +192,17 @@ function App() {
         width: width,
         height: height,
         style: {
-          width: width,
-          height: height,
+          width: `${width}px`,
+          height: `${height}px`,
           transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
         },
-        pixelRatio: scale,
+        pixelRatio: format === 'svg' ? 1 : scale, // SVG no necesita pixel ratio alto
+        cacheBust: true, // Forzar recarga de recursos
+        filter: (node) => {
+          // Filtrar elementos de control si estuvieran dentro del viewport
+          const classList = node.classList;
+          return !classList?.contains('react-flow__minimap') && !classList?.contains('react-flow__controls');
+        }
       };
 
       let dataUrl;
