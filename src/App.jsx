@@ -7,7 +7,10 @@ import {
   useNodesState,
   useEdgesState,
   Panel,
+  getRectOfNodes,
+  getTransformForBounds,
 } from '@xyflow/react';
+import { toPng, toSvg } from 'html-to-image';
 import '@xyflow/react/dist/style.css';
 import { Search, BookOpen, Download, X, ChevronRight, FileImage, FileType, Dna } from 'lucide-react';
 import { initialNodes, initialEdges } from './data/mapData';
@@ -110,73 +113,63 @@ function App() {
     );
   };
 
-  // Exportar como imagen de alta resolución
-  const exportAsImage = async (format = 'png', scale = 4) => {
-    const flowElement = document.querySelector('.react-flow');
+  // Exportar mapa completo con alta calidad
+  const downloadImage = (dataUrl, format) => {
+    const link = document.createElement('a');
+    link.download = `mapa-biologia-molecular-${Date.now()}.${format}`;
+    link.href = dataUrl;
+    link.click();
+  };
+
+  const exportMap = async (format = 'png', scale = 2) => {
+    // Calcular el rectángulo que abarca todos los nodos
+    const nodesBounds = getRectOfNodes(nodes);
+
+    // Configurar dimensiones de exportación con un margen
+    const padding = 50;
+    const width = nodesBounds.width + padding * 2;
+    const height = nodesBounds.height + padding * 2;
+
+    // Obtener la configuración de transformación para que encaje
+    const transform = getTransformForBounds(
+      nodesBounds,
+      width,
+      height,
+      0.5, // minZoom (no limita exportación)
+      2,   // maxZoom
+      padding // padding
+    );
+
+    const flowElement = document.querySelector('.react-flow__viewport');
+
     if (!flowElement) return;
 
     try {
-      // Importar html2canvas dinámicamente
-      const html2canvas = (await import('html2canvas')).default;
-
-      // Ocultar controles temporalmente
-      const controls = flowElement.querySelector('.react-flow__controls');
-      const minimap = flowElement.querySelector('.react-flow__minimap');
-      const panels = flowElement.querySelectorAll('.react-flow__panel');
-
-      if (controls) controls.style.display = 'none';
-      if (minimap) minimap.style.display = 'none';
-      panels.forEach(p => p.style.display = 'none');
-
-      const canvas = await html2canvas(flowElement, {
-        scale: scale, // Alta resolución para ploteo
-        useCORS: true,
-        logging: false,
+      const options = {
         backgroundColor: '#0a0f1a',
-        width: flowElement.scrollWidth,
-        height: flowElement.scrollHeight,
-      });
+        width: width,
+        height: height,
+        style: {
+          width: width,
+          height: height,
+          transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+        },
+        pixelRatio: scale, // Calidad de exportación
+      };
 
-      // Restaurar controles
-      if (controls) controls.style.display = '';
-      if (minimap) minimap.style.display = '';
-      panels.forEach(p => p.style.display = '');
+      let dataUrl;
+      if (format === 'svg') {
+        dataUrl = await toSvg(flowElement, options);
+      } else {
+        dataUrl = await toPng(flowElement, options);
+      }
 
-      // Descargar
-      const link = document.createElement('a');
-      link.download = `mapa-biologia-molecular-${Date.now()}.${format}`;
-      link.href = canvas.toDataURL(`image/${format}`, 1.0);
-      link.click();
-
+      downloadImage(dataUrl, format);
       setExportMenuOpen(false);
     } catch (error) {
-      console.error('Error al exportar:', error);
-      alert('Error al exportar. Asegúrate de que html2canvas esté instalado.');
+      console.error('Error exportando:', error);
+      alert('Error al exportar. Intenta de nuevo.');
     }
-  };
-
-  // Exportar como SVG (vectorial para máxima calidad)
-  const exportAsSVG = () => {
-    const svg = document.querySelector('.react-flow svg');
-    if (!svg) {
-      alert('No se encontró el SVG del mapa');
-      return;
-    }
-
-    const clonedSvg = svg.cloneNode(true);
-    clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-    const svgData = new XMLSerializer().serializeToString(clonedSvg);
-    const blob = new Blob([svgData], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.download = `mapa-biologia-molecular-${Date.now()}.svg`;
-    link.href = url;
-    link.click();
-
-    URL.revokeObjectURL(url);
-    setExportMenuOpen(false);
   };
 
   // Exportar como JSON
@@ -274,21 +267,21 @@ function App() {
                     <div className="export-menu-header">
                       <span>Exportar para ploteo</span>
                     </div>
-                    <button onClick={() => exportAsImage('png', 4)}>
+                    <button onClick={() => exportMap('png', 4)}>
                       <FileImage size={18} />
                       <div>
                         <span className="export-option-title">PNG Alta Resolución</span>
                         <span className="export-option-desc">4x escala, ideal para impresión A1/A0</span>
                       </div>
                     </button>
-                    <button onClick={() => exportAsImage('png', 6)}>
+                    <button onClick={() => exportMap('png', 6)}>
                       <FileImage size={18} />
                       <div>
                         <span className="export-option-title">PNG Ultra HD</span>
                         <span className="export-option-desc">6x escala, máxima calidad</span>
                       </div>
                     </button>
-                    <button onClick={exportAsSVG}>
+                    <button onClick={() => exportMap('svg', 2)}>
                       <FileType size={18} />
                       <div>
                         <span className="export-option-title">SVG Vectorial</span>
