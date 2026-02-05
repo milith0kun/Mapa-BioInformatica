@@ -167,18 +167,21 @@ function App() {
     // 1. Obtener bounds de todos los nodos
     const nodesBounds = getNodesBounds(nodes);
 
+    // Si no hay nodos o dimensiones inválidas, salir
+    if (nodesBounds.width <= 0 || nodesBounds.height <= 0) return;
+
     // 2. Definir tamaño de la imagen de salida (+ padding)
-    const padding = 0.1; // 10% de padding
-    const width = nodesBounds.width * (1 + padding * 2);
-    const height = nodesBounds.height * (1 + padding * 2);
+    const padding = 0.5; // 50% de padding para asegurar que nada se corte
+    const width = nodesBounds.width * (1 + padding);
+    const height = nodesBounds.height * (1 + padding);
 
     // 3. Calcular transformación para que encaje perfecto
     const transform = getViewportForBounds(
       nodesBounds,
       width,
       height,
-      0.1, // minZoom
-      5,   // maxZoom aumentado para permitir más detalle
+      0.1, // minZoom (permitir alejarse mucho si es necesario)
+      2,   // maxZoom
       padding
     );
 
@@ -187,19 +190,24 @@ function App() {
     if (!flowElement) return;
 
     try {
+      // Asegurar que las fuentes estén listas
+      await document.fonts.ready;
+
+      // Pequeño delay para asegurar estabilización
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const options = {
-        backgroundColor: '#0a0f1a',
         width: width,
         height: height,
+        backgroundColor: '#0a0f1a',
         style: {
-          width: `${width}px`,
-          height: `${height}px`,
+          // IMPORTANTE: No restringir width/height aquí para evitar recortes en el viewport
           transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+          backgroundColor: '#0a0f1a',
         },
-        pixelRatio: format === 'svg' ? 1 : scale, // SVG no necesita pixel ratio alto
-        cacheBust: true, // Forzar recarga de recursos
+        pixelRatio: format === 'svg' ? 1 : scale,
+        cacheBust: true,
         filter: (node) => {
-          // Filtrar elementos de control si estuvieran dentro del viewport
           const classList = node.classList;
           return !classList?.contains('react-flow__minimap') && !classList?.contains('react-flow__controls');
         }
