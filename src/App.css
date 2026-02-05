@@ -18,24 +18,27 @@
   --bg-tertiary: #111827;
   --bg-card: #1a2332;
   --bg-elevated: #1e2a3a;
-  
-  /* Acentos científicos */
-  --accent-primary: #00d4aa;
-  --accent-secondary: #06b6d4;
-  --accent-tertiary: #8b5cf6;
+
+  /* Acentos científicos más brillantes para contraste oscuro */
+  --accent-primary: #00f2c4;
+  /* Cyan neón más brillante */
+  --accent-secondary: #0ea5e9;
+  /* Azul cielo brillante */
+  --accent-tertiary: #a78bfa;
+  /* Violeta claro */
   --accent-warning: #f59e0b;
   --accent-danger: #ef4444;
-  
+
   /* Texto */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  
+
   /* Bordes */
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.15);
-  
+
   /* Categorías - vibrantes sobre fondo oscuro */
   --color-fundamentales: #e1f5ff;
   --color-estructurales: #fff3e0;
@@ -43,14 +46,14 @@
   --color-traduccion: #fff9c4;
   --color-tecnicas: #e8f5e9;
   --color-genomica: #fce4ec;
-  
+
   --border-fundamentales: #01579b;
   --border-estructurales: #e65100;
   --border-procesos: #7c3aed;
   --border-traduccion: #f59e0b;
   --border-tecnicas: #10b981;
   --border-genomica: #ec4899;
-  
+
   /* Sombras */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
@@ -95,13 +98,12 @@ body {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    var(--accent-primary) 20%, 
-    var(--accent-secondary) 50%, 
-    var(--accent-tertiary) 80%, 
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      var(--accent-primary) 20%,
+      var(--accent-secondary) 50%,
+      var(--accent-tertiary) 80%,
+      transparent 100%);
   opacity: 0.5;
 }
 
@@ -121,10 +123,23 @@ body {
 }
 
 @keyframes dnaRotate {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(5deg) scale(1.05); }
-  50% { transform: rotate(0deg) scale(1); }
-  75% { transform: rotate(-5deg) scale(1.05); }
+
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  25% {
+    transform: rotate(5deg) scale(1.05);
+  }
+
+  50% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  75% {
+    transform: rotate(-5deg) scale(1.05);
+  }
 }
 
 .logo-text h1 {
@@ -284,6 +299,7 @@ body {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -564,35 +580,96 @@ body {
   background: var(--bg-primary) !important;
 }
 
+/* NODOS MEJORADOS PARA LEGIBILIDAD */
 .react-flow__node {
-  font-size: 12px;
+  font-size: 14px;
+  /* Aumentado de 12px */
   border-width: 2px;
-  border-radius: 10px;
-  padding: 10px 14px;
+  border-radius: 12px;
+  padding: 12px 18px;
+  /* Más padding */
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 600;
-  box-shadow: var(--shadow-md);
+  font-weight: 700;
+  /* Texto más grueso */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+  /* Sombra más fuerte */
+  text-align: center;
+
+  /* Asegurar que el texto se lea bien */
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  /* Ancho mínimo */
+  max-width: 220px;
+  /* Ancho máximo aumentado */
+  min-height: 50px;
+
+  /* Manejo de texto largo */
+  white-space: normal !important;
+  /* Permitir saltos de línea */
+  line-height: 1.3;
+}
+
+/* Asegurar contraste de texto dentro de los nodos (ya que tienen fondo claro) */
+.react-flow__node {
+  color: #1a202c !important;
+  /* Texto oscuro fuerte para contraste */
 }
 
 .react-flow__node:hover {
-  transform: scale(1.08);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  z-index: 10;
+  transform: scale(1.1);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  z-index: 100 !important;
+  border-color: var(--accent-primary) !important;
 }
 
 .react-flow__node.selected {
-  box-shadow: 0 0 0 3px var(--accent-primary), var(--shadow-glow);
+  box-shadow: 0 0 0 4px var(--accent-primary), var(--shadow-glow);
   transform: scale(1.05);
+  border-color: var(--accent-primary) !important;
+  z-index: 99;
 }
 
+/* CONEXIONES (EDGES) MÁS VISIBLES */
 .react-flow__edge-path {
-  stroke-width: 2;
-  transition: stroke-width 0.2s;
+  stroke-width: 3px !important;
+  /* Líneas más gruesas */
+  stroke: #475569 !important;
+  /* Gris azulado visible sobre fondo oscuro */
+  stroke-opacity: 0.8;
+  transition: all 0.2s;
 }
 
 .react-flow__edge:hover .react-flow__edge-path {
-  stroke-width: 3;
+  stroke-width: 5px !important;
+  stroke: var(--accent-secondary) !important;
+  stroke-opacity: 1;
+}
+
+/* TEXTO DE CONEXIONES */
+.react-flow__edge-textbg {
+  fill: var(--bg-elevated) !important;
+  /* Fondo de etiqueta oscuro */
+  rx: 6;
+  /* Bordes redondeados */
+  ry: 6;
+}
+
+.react-flow__edge-text {
+  fill: var(--text-primary) !important;
+  /* Texto claro */
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+/* Mejores controladores para conectar (aunque no se usan para conectar manualmente, se ven mejor) */
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  background: var(--accent-primary);
+  border: 2px solid white;
 }
 
 /* Controles */
@@ -745,8 +822,15 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.85; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
 }
 
 /* ===== PANEL LATERAL DERECHO (Detalles) ===== */
@@ -950,8 +1034,13 @@ body {
 
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -959,6 +1048,7 @@ body {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -989,11 +1079,11 @@ body {
   .header-center {
     padding: 0 1rem;
   }
-  
+
   .search-container {
     max-width: 320px;
   }
-  
+
   .detail-panel {
     width: 320px;
   }
@@ -1005,32 +1095,32 @@ body {
     padding: 0.75rem 1rem;
     gap: 0.75rem;
   }
-  
+
   .header-left {
     order: 1;
     flex: none;
   }
-  
+
   .header-center {
     order: 3;
     flex: none;
     width: 100%;
     padding: 0;
   }
-  
+
   .header-right {
     order: 2;
     flex: 1;
   }
-  
+
   .logo-text h1 {
     font-size: 1rem;
   }
-  
+
   .logo-text p {
     font-size: 0.65rem;
   }
-  
+
   .search-container {
     max-width: 100%;
   }
@@ -1054,7 +1144,7 @@ body {
   .sidebar.closed {
     transform: translateX(-250px);
   }
-  
+
   .sidebar-toggle {
     right: -40px;
   }
@@ -1068,16 +1158,16 @@ body {
     padding: 0.75rem !important;
     font-size: 0.75rem;
   }
-  
+
   .legend h4 {
     font-size: 0.7rem;
   }
-  
+
   .legend-item {
     font-size: 0.7rem;
     margin-bottom: 0.375rem;
   }
-  
+
   .legend-color {
     width: 12px;
     height: 12px;
@@ -1101,20 +1191,20 @@ body {
   .header {
     padding: 0.625rem 0.75rem;
   }
-  
+
   .logo-icon {
     display: none;
   }
-  
+
   .logo-text h1 {
     font-size: 0.95rem;
   }
-  
+
   .concept-count {
     font-size: 0.7rem;
     padding: 0.375rem 0.625rem;
   }
-  
+
   .concept-count span:first-child {
     display: none;
   }
@@ -1126,11 +1216,11 @@ body {
   .react-flow__minimap {
     display: none !important;
   }
-  
+
   .mobile-detail-sheet {
     max-height: 70vh;
   }
-  
+
   .mobile-sheet-header h3 {
     font-size: 1rem;
   }
@@ -1138,6 +1228,7 @@ body {
 
 /* ===== PRINT STYLES ===== */
 @media print {
+
   .header,
   .sidebar,
   .detail-panel,
@@ -1148,16 +1239,16 @@ body {
   .mobile-detail-sheet {
     display: none !important;
   }
-  
+
   .app {
     background: white;
   }
-  
+
   .canvas-container {
     width: 100%;
     height: 100%;
   }
-  
+
   .react-flow {
     background: white !important;
   }

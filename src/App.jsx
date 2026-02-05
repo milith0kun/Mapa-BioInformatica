@@ -14,6 +14,14 @@ import { initialNodes, initialEdges } from './data/mapData';
 import { conceptosInfo } from './data/conceptsData';
 import './App.css';
 
+const defaultEdgeOptions = {
+  style: { strokeWidth: 3, stroke: '#64748b' },
+  type: 'smoothstep',
+  animated: true,
+  labelStyle: { fill: '#f1f5f9', fontWeight: 600, fontSize: 13 },
+  labelBgStyle: { fill: '#1e2a3a', rx: 6, ry: 6 },
+};
+
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -110,12 +118,12 @@ function App() {
     try {
       // Importar html2canvas dinámicamente
       const html2canvas = (await import('html2canvas')).default;
-      
+
       // Ocultar controles temporalmente
       const controls = flowElement.querySelector('.react-flow__controls');
       const minimap = flowElement.querySelector('.react-flow__minimap');
       const panels = flowElement.querySelectorAll('.react-flow__panel');
-      
+
       if (controls) controls.style.display = 'none';
       if (minimap) minimap.style.display = 'none';
       panels.forEach(p => p.style.display = 'none');
@@ -157,16 +165,16 @@ function App() {
 
     const clonedSvg = svg.cloneNode(true);
     clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    
+
     const svgData = new XMLSerializer().serializeToString(clonedSvg);
     const blob = new Blob([svgData], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.download = `mapa-biologia-molecular-${Date.now()}.svg`;
     link.href = url;
     link.click();
-    
+
     URL.revokeObjectURL(url);
     setExportMenuOpen(false);
   };
@@ -174,7 +182,7 @@ function App() {
   // Exportar como JSON
   const handleExportJSON = () => {
     const dataStr = JSON.stringify({ nodes, edges }, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', `mapa-biologia-molecular-${Date.now()}.json`);
@@ -185,7 +193,7 @@ function App() {
   // Guardar posiciones cuando se mueven nodos
   const handleNodesChange = useCallback((changes) => {
     onNodesChange(changes);
-    
+
     // Si es un cambio de posición, guardar
     const positionChange = changes.find(c => c.type === 'position' && c.dragging === false);
     if (positionChange && editMode) {
@@ -241,16 +249,16 @@ function App() {
         <div className="header-right">
           {!isMobile && (
             <>
-              <button 
+              <button
                 className={`mode-btn ${editMode ? 'active' : ''}`}
                 onClick={() => setEditMode(!editMode)}
                 title={editMode ? 'Desactivar modo edición' : 'Activar modo edición para mover nodos'}
               >
                 {editMode ? '👁 Ver' : '✏️ Editar'}
               </button>
-              
+
               <div className="export-dropdown">
-                <button 
+                <button
                   className="export-btn"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -300,8 +308,8 @@ function App() {
               </div>
 
               {editMode && (
-                <button 
-                  className="reset-btn" 
+                <button
+                  className="reset-btn"
                   onClick={handleResetPositions}
                   title="Restaurar posiciones originales"
                 >
@@ -319,13 +327,13 @@ function App() {
 
       <div className="main-layout">
         <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
-          <button 
+          <button
             className="sidebar-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             {sidebarOpen ? '«' : '»'}
           </button>
-          
+
           {sidebarOpen && (
             <div className="sidebar-content">
               {searchTerm ? (
@@ -404,6 +412,7 @@ function App() {
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
             onInit={setReactFlowInstance}
+            defaultEdgeOptions={defaultEdgeOptions}
             fitView
             fitViewOptions={{
               padding: 0.2,
@@ -425,18 +434,18 @@ function App() {
             elementsSelectable={true}
             selectNodesOnDrag={editMode}
           >
-            <Background 
+            <Background
               color="#1e3a5f"
               gap={20}
               size={1}
             />
-            <Controls 
+            <Controls
               showZoom={true}
               showFitView={true}
               showInteractive={false}
               position="bottom-right"
             />
-            <MiniMap 
+            <MiniMap
               nodeColor={(node) => {
                 return node.style?.background || '#e2e8f0';
               }}
